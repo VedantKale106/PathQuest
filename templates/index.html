@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PathQuest</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Background styling */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('static/bg.jpg') no-repeat center center;
+            background-size: cover;
+            filter: blur(8px);
+            z-index: -1;
+        }
+
+        .navbar {
+            background-color: rgba(51, 51, 51, 0.9);
+            padding: 15px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ede917b0;
+        }
+
+        .main-wrapper {
+            display: flex;
+            padding-top: 58px;
+            min-height: calc(100vh - 40px);
+        }
+
+        .instructions {
+            width: 300px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            position: fixed;
+        }
+
+        .instructions h2 {
+            color: #f09f1c;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .algorithm-info {
+            margin-top: 20px;
+        }
+
+        .algorithm-info h3 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 320px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #f09f1c;
+            text-align: center;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #4a90e2;
+            color: white;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ab7;
+        }
+
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(20, 30px);
+            grid-template-rows: repeat(20, 30px);
+            gap: 2px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(224, 224, 224, 0.9);
+            border: 1px solid #bbb;
+            transition: background-color 0.3s;
+        }
+
+        .cell.start {
+            background-color: #4caf50;
+        }
+
+        .cell.end {
+            background-color: #f44336;
+        }
+
+        .cell.obstacle {
+            background-color: #333;
+        }
+
+        .cell.path {
+            background-color: #ffeb3b;
+        }
+
+        .distance {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a90e2;
+            text-align: center;
+        }
+
+        .footer {
+            background-color: rgba(51, 51, 51, 0.9);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .footer a {
+            color: #f09f1c;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">PathQuest</div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="instructions">
+            <h2>How to Use</h2>
+            <ol>
+                <li>Click on the grid to set a <span style="color: #4caf50">start point</span></li>
+                <li>Click again to set an <span style="color: #f44336">end point</span></li>
+                <li>Click additional cells to create <span style="color: #333">obstacles</span></li>
+                <li>Choose an algorithm from the dropdown</li>
+                <li>Click "Find Path" to visualize the pathfinding</li>
+            </ol>
+
+            <div class="algorithm-info">
+                <h2>Algorithms</h2>
+                
+                <h3>Dijkstra's Algorithm</h3>
+                <p>Guarantees the shortest path by exploring all possible routes, ideal for weighted graphs.</p>
+                
+                <h3>A* (A-Star)</h3>
+                <p>Uses heuristics to find the optimal path more efficiently than Dijkstra's by estimating the distance to the goal.</p>
+                
+                <h3>Breadth-First Search</h3>
+                <p>Explores all neighbor nodes at the present depth before moving to nodes at the next depth level.</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="container">
+                <h1>Pathfinding Visualizer</h1>
+                
+                <div class="controls">
+                    <label for="algorithm">Choose Algorithm:</label>
+                    <select id="algorithm">
+                        <option value="dijkstra">Dijkstra's Algorithm</option>
+                        <option value="a_star">A*</option>
+                        <option value="bfs">Breadth-First Search</option>
+                    </select>
+                    <div class="buttons">
+                        <button id="findPathBtn">Find Path</button>
+                        <button id="clearPathBtn">Clear Path</button>
+                    </div>
+                    <div class="distance" id="distanceDisplay">Distance: -</div>
+                </div>
+
+                <div id="grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        Created with ❤️ by <a href="https://github.com/VedantKale106/PathQuest" target="_blank">Vedant, Aditya and Prathmesh</a> | © 2024 PathQuest
+    </footer>
+
+    <script>
+        const gridElement = document.getElementById('grid');
+        const findPathBtn = document.getElementById('findPathBtn');
+        const clearPathBtn = document.getElementById('clearPathBtn');
+        const algorithmSelect = document.getElementById('algorithm');
+        const distanceDisplay = document.getElementById('distanceDisplay');
+
+        let grid = Array.from({ length: 20 }, () => Array(20).fill(0));
+        let start = null;
+        let end = null;
+
+        // Create grid cells
+        for (let y = 0; y < 20; y++) {
+            for (let x = 0; x < 20; x++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.addEventListener('click', () => handleCellClick(x, y, cell));
+                gridElement.appendChild(cell);
+            }
+        }
+
+        function handleCellClick(x, y, cell) {
+            if (cell.classList.contains('obstacle')) {
+                cell.classList.remove('obstacle');
+                grid[y][x] = 0;
+            } else if (!start) {
+                cell.classList.add('start');
+                start = [x, y];
+                grid[y][x] = 0;
+            } else if (!end) {
+                cell.classList.add('end');
+                end = [x, y];
+                grid[y][x] = 0;
+            } else {
+                cell.classList.add('obstacle');
+                grid[y][x] = 1;
+            }
+        }
+
+        findPathBtn.addEventListener('click', async () => {
+            if (!start || !end) {
+                alert('Please select a start and end point.');
+                return;
+            }
+
+            const pathCells = document.querySelectorAll('.path');
+            pathCells.forEach(cell => cell.classList.remove('path'));
+
+            const pathResponse = await fetch('/path', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ grid, start, end, algorithm: algorithmSelect.value })
+            });
+
+            const path = await pathResponse.json();
+
+            if (path.length === 0) {
+                alert('No path found!');
+                distanceDisplay.textContent = 'Distance: -';
+                return;
+            }
+            for (const [x, y] of path) {
+                const cell = gridElement.children[y * 20 + x];
+                cell.classList.add('path');
+            }
+
+            distanceDisplay.textContent = `Distance: ${path.length - 1}`;
+        });
+
+        clearPathBtn.addEventListener('click', () => {
+            const pathCells = document.querySelectorAll('.path');
+            pathCells.forEach(cell => cell.classList.remove('path'));
+            
+            if (start) {
+                const startCell = gridElement.children[start[1] * 20 + start[0]];
+                startCell.classList.remove('start');
+            }
+            
+            if (end) {
+                const endCell = gridElement.children[end[1] * 20 + end[0]];
+                endCell.classList.remove('end');
+            }
+
+            start = null;
+            end = null;
+            distanceDisplay.textContent = 'Distance: -';
+        });
+    </script>
+</body>
+</html>
